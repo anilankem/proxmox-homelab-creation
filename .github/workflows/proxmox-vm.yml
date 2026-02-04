@@ -1,0 +1,100 @@
+name: Proxmox VM create/destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action to perform"
+        required: true
+        type: choice
+        options:
+          - create
+          - destroy
+        default: create
+      template:
+        description: "Template to clone from"
+        required: true
+        type: choice
+        options:
+          - ubuntu24-golden
+          - centos10-stream-golden
+      vm_name:
+        description: "Name of the VM"
+        required: true
+        type: string
+      ram_mb:
+        description: "RAM in MB"
+        required: true
+        type: number
+        default: 2048
+      disk_gb:
+        description: "Disk size in GB"
+        required: true
+        type: number
+        default: 20
+      node_name:
+        description: "Proxmox node (e.g. pve)"
+        required: true
+        type: string
+        default: proxmox
+
+jobs:
+  proxmox-vm:
+    runs-on: self-hosted
+
+    env:
+      TF_IN_AUTOMATION: "true"
+
+    defaults:
+      run:
+        working-directory: proxmox/terraform
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+
+      - name: Terraform init
+        run: terraform init
+        env:
+          TF_VAR_proxmox_api_url: ${{ secrets.PROXMOX_API_URL }}
+          TF_VAR_proxmox_token_id: ${{ secrets.PROXMOX_TOKEN_ID }}
+          TF_VAR_proxmox_token_secret: ${{ secrets.PROXMOX_TOKEN_SECRET }}
+          TF_VAR_proxmox_insecure: ${{ secrets.PROXMOX_INSECURE }}
+
+      - name: Terraform apply (create)
+        if: ${{ github.event.inputs.action == 'create' }}
+        run: |
+          terraform apply -auto-approve \
+            -var="proxmox_api_url=${TF_VAR_proxmox_api_url}" \
+            -var="proxmox_token_id=${TF_VAR_proxmox_token_id}" \
+            -var="proxmox_token_secret=${TF_VAR_proxmox_token_secret}" \
+            -var="proxmox_insecure=${TF_VAR_proxmox_insecure}" \
+            -var="node_name=proxmox" \
+            -var="vm_name=${{ github.event.inputs.vm_name }}" \
+            -var="template_name=${{ github.event.inputs.template }}" \
+            -var="vm_memory_mb=${{ github.event.inputs.ram_mb }}" \
+            -var="disk_size_gb=${{ github.event.inputs.disk_gb }}"
+
+      - name: Terraform destroy (destroy)
+        if: ${{ github.event.inputs.action == 'destroy' }}
+        run: |
+          terraform destroy -auto-approve \
+            -var="proxmox_api_url=${TF_VAR_proxmox_api_url}" \
+            -var="proxmox_token_id=${TF_VAR_proxmox_token_id}" \
+            -var="proxmox_token_secret=${TF_VAR_proxmox_token_secret}" \
+            -var="proxmox_insecure=${TF_VAR_proxmox_insecure}" \
+            -var="node_name=proxmox" \
+            -var="vm_name=${{ github.event.inputs.vm_name }}" \
+            -var="template_name=${{ github.event.inputs.template }}" \
+            -var="vm_memory_mb=${{ github.event.inputs.ram_mb }}" \
+            -var="disk_size_gb=${{ github.event.inputs.disk_gb }}"
+
+      - name: Show outputs (create only)
+        if: ${{ github.event.inputs.action == 'create' }}
+        run: terraform output
+
