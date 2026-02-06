@@ -15,6 +15,6 @@ provider "proxmox" {
   pm_api_token_secret = var.proxmox_token_secret
 
   # Set to true if you are using self-signed certificates and want to skip TLS verification.
-  pm_tls_insecure = var.proxmox_insecure
+  pm_tls_insecure = true
 }
 
