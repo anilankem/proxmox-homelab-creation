@@ -47,7 +47,6 @@ jobs:
       TF_VAR_proxmox_api_url: ${{ secrets.PROXMOX_API_URL }}
       TF_VAR_proxmox_token_id: ${{ secrets.PROXMOX_TOKEN_ID }}
       TF_VAR_proxmox_token_secret: ${{ secrets.PROXMOX_TOKEN_SECRET }}
-      TF_VAR_proxmox_insecure: ${{ secrets.PROXMOX_INSECURE }}
 
     defaults:
       run:
@@ -68,7 +67,6 @@ jobs:
           TF_VAR_proxmox_api_url: ${{ secrets.PROXMOX_API_URL }}
           TF_VAR_proxmox_token_id: ${{ secrets.PROXMOX_TOKEN_ID }}
           TF_VAR_proxmox_token_secret: ${{ secrets.PROXMOX_TOKEN_SECRET }}
-          TF_VAR_proxmox_insecure: ${{ secrets.PROXMOX_INSECURE }}
 
       - name: Terraform apply (create)
         if: ${{ github.event.inputs.action == 'create' }}
@@ -77,7 +75,6 @@ jobs:
             -var="proxmox_api_url=${TF_VAR_proxmox_api_url}" \
             -var="proxmox_token_id=${TF_VAR_proxmox_token_id}" \
             -var="proxmox_token_secret=${TF_VAR_proxmox_token_secret}" \
-            -var="proxmox_insecure=${TF_VAR_proxmox_insecure}" \
             -var="node_name=proxmox" \
             -var="vm_name=${{ github.event.inputs.vm_name }}" \
             -var="template_name=${{ github.event.inputs.template }}" \
@@ -91,7 +88,6 @@ jobs:
             -var="proxmox_api_url=${TF_VAR_proxmox_api_url}" \
             -var="proxmox_token_id=${TF_VAR_proxmox_token_id}" \
             -var="proxmox_token_secret=${TF_VAR_proxmox_token_secret}" \
-            -var="proxmox_insecure=${TF_VAR_proxmox_insecure}" \
             -var="node_name=proxmox" \
             -var="vm_name=${{ github.event.inputs.vm_name }}" \
             -var="template_name=${{ github.event.inputs.template }}" \
